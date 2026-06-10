@@ -30,24 +30,21 @@ export default async function DashboardPage() {
     .order("entry_date", { ascending: false })
     .limit(5);
 
-  const { data: skillTags } = await supabase
-    .from("entry_skills")
-    .select("skill_name, domain_name, domain_id, dreyfus_level")
-    .in(
-      "entry_id",
-      (recentEntries ?? []).map((e) => e.id)
-    );
+  const entryIds = (recentEntries ?? []).map((e) => e.id);
+
+  const { data: skillTags } = entryIds.length > 0
+    ? await supabase
+        .from("entry_skills")
+        .select("skill_name, domain_name, domain_id, dreyfus_level")
+        .in("entry_id", entryIds)
+    : { data: [] };
 
   // Aggregate: highest dreyfus level per skill
-  const skillMap = new Map<string, { domain_name: string; domain_id: string; max_level: number }>();
+  const skillMap = new Map<string, { domain_id: string; max_level: number }>();
   for (const tag of skillTags ?? []) {
     const existing = skillMap.get(tag.skill_name);
     if (!existing || tag.dreyfus_level > existing.max_level) {
-      skillMap.set(tag.skill_name, {
-        domain_name: tag.domain_name,
-        domain_id: tag.domain_id,
-        max_level: tag.dreyfus_level,
-      });
+      skillMap.set(tag.skill_name, { domain_id: tag.domain_id, max_level: tag.dreyfus_level });
     }
   }
 
@@ -56,7 +53,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-8 max-w-4xl">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#000054]">
           Welcome back, {student.name.split(" ")[0]}
@@ -120,7 +116,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {(recentEntries ?? []).length === 0 ? (
+        {totalEntries === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500 text-sm mb-4">No journal entries yet.</p>
             <Link
@@ -164,13 +160,13 @@ export default async function DashboardPage() {
 function domainColor(domainId: string): string {
   const colors: Record<string, string> = {
     "earth-systems": "#065F46",
-    "design": "#1D4ED8",
-    "creative": "#7C3AED",
-    "economics": "#B45309",
-    "governance": "#000054",
-    "indigenous": "#9F1239",
-    "technology": "#0369A1",
-    "leadership": "#374151",
+    "design":        "#1D4ED8",
+    "creative":      "#7C3AED",
+    "economics":     "#B45309",
+    "governance":    "#000054",
+    "indigenous":    "#9F1239",
+    "technology":    "#0369A1",
+    "leadership":    "#374151",
   };
   return colors[domainId] ?? "#6B7280";
 }
