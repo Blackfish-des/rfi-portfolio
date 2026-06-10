@@ -26,7 +26,7 @@ export const DOMAINS: Domain[] = [
     color: "#065F46",
     skills: [
       { id: "systems-thinking", name: "Systems Thinking", domainId: "earth-systems" },
-      { id: "earth-systems-science", name: "Earth Systems & Ecological Science", domainId: "earth-systems" },
+      { id: "earth-systems-science", name: "Eco-Literacy", domainId: "earth-systems" },
       { id: "futures-literacy", name: "Futures Literacy", domainId: "earth-systems" },
       { id: "place-based-inquiry", name: "Place-Based & Relational Inquiry", domainId: "earth-systems" },
     ],
