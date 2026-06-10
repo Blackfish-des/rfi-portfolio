@@ -20,7 +20,7 @@ export default function SignupPage() {
 
     const supabase = createClient();
 
-    const { data, error: signupError } = await supabase.auth.signUp({
+    const { error: signupError } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { name } },
@@ -32,39 +32,9 @@ export default function SignupPage() {
       return;
     }
 
-    if (data.user) {
-      // Create student record
-      const { error: studentError } = await supabase.from("students").insert({
-        auth_user_id: data.user.id,
-        name,
-        email,
-        cohort_year: new Date().getFullYear(),
-      });
-
-      if (studentError && studentError.code !== "23505") {
-        // Ignore unique constraint errors (already exists)
-        setError(studentError.message);
-        setLoading(false);
-        return;
-      }
-
-      // Create portfolio
-      const { data: student } = await supabase
-        .from("students")
-        .select("id")
-        .eq("auth_user_id", data.user.id)
-        .single();
-
-      if (student) {
-        await supabase.from("portfolios").insert({
-          student_id: student.id,
-          visibility: "private",
-        });
-      }
-
-      router.push("/dashboard");
-      router.refresh();
-    }
+    // Trigger creates student + portfolio automatically
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (
