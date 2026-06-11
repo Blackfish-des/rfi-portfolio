@@ -31,3 +31,13 @@ body {
 .tiptap ol { list-style: decimal; padding-left: 1.5rem; }
 .tiptap blockquote { border-left: 3px solid #E3001B; padding-left: 1rem; color: #6B7280; }
 .tiptap a { color: #000054; text-decoration: underline; }
+
+/* Print / PDF export */
+@media print {
+  nav, .print\:hidden { display: none !important; }
+  body { background: white; }
+  .bg-gray-50 { background: white !important; }
+  .rounded-xl, .rounded-lg { border-radius: 0 !important; }
+  .shadow-sm { box-shadow: none !important; }
+  @page { margin: 20mm; }
+}

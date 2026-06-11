@@ -7,16 +7,19 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import SkillTagPanel from "./SkillTagPanel";
 import MethodTagPanel from "./MethodTagPanel";
+import AiUsePanel from "./AiUsePanel";
 import type { SkillTagInput, MethodTagInput, EntryInput } from "@/app/actions/journal";
+import type { Method } from "@/app/actions/methods";
 import { createEntry, updateEntry } from "@/app/actions/journal";
 import {
   Bold, Italic, List, ListOrdered, Heading2, Link as LinkIcon,
-  Save, BookOpen, Brain,
+  Save, BookOpen, Brain, Sparkles,
 } from "lucide-react";
 
 type Props = {
   mode: "new" | "edit";
   entryId?: string;
+  methodLibrary: Method[];
   initial?: {
     title: string;
     course_title: string;
@@ -24,10 +27,11 @@ type Props = {
     content: Record<string, unknown>;
     skills: SkillTagInput[];
     methods: MethodTagInput[];
+    ai_use_notes: string;
   };
 };
 
-export default function EntryEditor({ mode, entryId, initial }: Props) {
+export default function EntryEditor({ mode, entryId, methodLibrary, initial }: Props) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [courseTitle, setCourseTitle] = useState(initial?.course_title ?? "");
   const [entryDate, setEntryDate] = useState(
@@ -35,7 +39,8 @@ export default function EntryEditor({ mode, entryId, initial }: Props) {
   );
   const [skills, setSkills] = useState<SkillTagInput[]>(initial?.skills ?? []);
   const [methods, setMethods] = useState<MethodTagInput[]>(initial?.methods ?? []);
-  const [activeTab, setActiveTab] = useState<"skills" | "methods">("skills");
+  const [aiUseNotes, setAiUseNotes] = useState(initial?.ai_use_notes ?? "");
+  const [activeTab, setActiveTab] = useState<"skills" | "methods" | "ai">("skills");
   const [isPending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -60,7 +65,8 @@ export default function EntryEditor({ mode, entryId, initial }: Props) {
     content: (editor?.getJSON() ?? {}) as Record<string, unknown>,
     skills,
     methods,
-  }), [title, courseTitle, entryDate, editor, skills, methods]);
+    ai_use_notes: aiUseNotes || undefined,
+  }), [title, courseTitle, entryDate, editor, skills, methods, aiUseNotes]);
 
   function handleSave() {
     setSaveError(null);
@@ -167,38 +173,43 @@ export default function EntryEditor({ mode, entryId, initial }: Props) {
       <div className="w-full lg:w-80 border-l border-gray-200 bg-white flex flex-col shrink-0">
         {/* Tab header */}
         <div className="flex border-b border-gray-200">
-          {(["skills", "methods"] as const).map((tab) => (
+          {(["skills", "methods", "ai"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors border-b-2 ${
+              className={`flex-1 flex items-center justify-center gap-1 py-3 text-xs font-medium transition-colors border-b-2 ${
                 activeTab === tab
                   ? "border-[#000054] text-[#000054]"
                   : "border-transparent text-gray-400 hover:text-gray-600"
               }`}
             >
-              {tab === "skills" ? <Brain size={13} /> : <BookOpen size={13} />}
-              {tab === "skills" ? `Skills ${skills.length > 0 ? `(${skills.length})` : ""}` : `Methods ${methods.length > 0 ? `(${methods.length})` : ""}`}
+              {tab === "skills" && <><Brain size={13} />{`Skills${skills.length > 0 ? ` (${skills.length})` : ""}`}</>}
+              {tab === "methods" && <><BookOpen size={13} />{`Methods${methods.length > 0 ? ` (${methods.length})` : ""}`}</>}
+              {tab === "ai" && (
+                <>
+                  <Sparkles size={13} />
+                  <span>AI use{aiUseNotes ? " ✓" : ""}</span>
+                </>
+              )}
             </button>
           ))}
         </div>
 
         {/* Panel content */}
         <div className="flex-1 overflow-y-auto p-4">
-          {activeTab === "skills" ? (
+          {activeTab === "skills" && (
             <div>
               <p className="text-xs text-gray-500 mb-3">
                 Which skills were you developing in this entry?
               </p>
               <SkillTagPanel value={skills} onChange={setSkills} />
             </div>
-          ) : (
-            <div>
-              <p className="text-xs text-gray-500 mb-3">
-                Which methods or approaches did you use?
-              </p>
-              <MethodTagPanel value={methods} onChange={setMethods} />
-            </div>
+          )}
+          {activeTab === "methods" && (
+            <MethodTagPanel value={methods} onChange={setMethods} library={methodLibrary} />
+          )}
+          {activeTab === "ai" && (
+            <AiUsePanel value={aiUseNotes} onChange={setAiUseNotes} />
           )}
         </div>
       </div>

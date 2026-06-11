@@ -28,6 +28,7 @@ export type EntryInput = {
   content: Record<string, unknown>;
   skills: SkillTagInput[];
   methods: MethodTagInput[];
+  ai_use_notes?: string;
 };
 
 async function getPortfolioId(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
@@ -65,6 +66,7 @@ export async function createEntry(input: EntryInput) {
       course_title: input.course_title ?? null,
       entry_date: input.entry_date,
       content: input.content as Json,
+      ai_use_notes: input.ai_use_notes ?? null,
     })
     .select("id")
     .single();
@@ -103,6 +105,7 @@ export async function updateEntry(entryId: string, input: EntryInput) {
       course_title: input.course_title ?? null,
       entry_date: input.entry_date,
       content: input.content as Json,
+      ai_use_notes: input.ai_use_notes ?? null,
     })
     .eq("id", entryId);
 

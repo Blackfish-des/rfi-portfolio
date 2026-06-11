@@ -23,6 +23,12 @@ export default async function DashboardPage() {
     .eq("student_id", student.id)
     .single();
 
+  // Fetch all entries for accurate counts, but only 5 for display
+  const { data: allEntries } = await supabase
+    .from("journal_entries")
+    .select("id")
+    .eq("portfolio_id", portfolio?.id ?? "");
+
   const { data: recentEntries } = await supabase
     .from("journal_entries")
     .select("id, title, course_title, entry_date")
@@ -30,16 +36,16 @@ export default async function DashboardPage() {
     .order("entry_date", { ascending: false })
     .limit(5);
 
-  const entryIds = (recentEntries ?? []).map((e) => e.id);
+  const allEntryIds = (allEntries ?? []).map((e) => e.id);
 
-  const { data: skillTags } = entryIds.length > 0
+  const { data: skillTags } = allEntryIds.length > 0
     ? await supabase
         .from("entry_skills")
         .select("skill_name, domain_name, domain_id, dreyfus_level")
-        .in("entry_id", entryIds)
+        .in("entry_id", allEntryIds)
     : { data: [] };
 
-  // Aggregate: highest dreyfus level per skill
+  // Aggregate: highest level per skill across ALL entries
   const skillMap = new Map<string, { domain_id: string; max_level: number }>();
   for (const tag of skillTags ?? []) {
     const existing = skillMap.get(tag.skill_name);
@@ -48,7 +54,7 @@ export default async function DashboardPage() {
     }
   }
 
-  const totalEntries = recentEntries?.length ?? 0;
+  const totalEntries = allEntries?.length ?? 0;
   const totalSkills = skillMap.size;
 
   return (

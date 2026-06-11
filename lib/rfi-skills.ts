@@ -11,7 +11,7 @@ export type Skill = {
   domainId: string;
 };
 
-export const DREYFUS_LEVELS = [
+export const SKILL_LEVELS = [
   { level: 1, label: "Novice", description: "Following instructions in familiar contexts" },
   { level: 2, label: "Advanced Beginner", description: "Applying in new situations with some guidance" },
   { level: 3, label: "Competent", description: "Making deliberate choices about when and how" },

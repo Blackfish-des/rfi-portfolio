@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DOMAINS, DREYFUS_LEVELS } from "@/lib/rfi-skills";
+import { DOMAINS, SKILL_LEVELS } from "@/lib/rfi-skills";
 import type { SkillTagInput } from "@/app/actions/journal";
 import { ChevronDown, ChevronRight, X } from "lucide-react";
 
@@ -160,9 +160,9 @@ function SkillForm({
         Where are you with <span style={{ color: domain.color }}>{skill.name}</span>?
       </p>
 
-      {/* Dreyfus selector */}
+      {/* Skill level selector */}
       <div className="space-y-1">
-        {DREYFUS_LEVELS.map((l) => (
+        {SKILL_LEVELS.map((l) => (
           <button
             key={l.level}
             onClick={() => setLevel(l.level)}

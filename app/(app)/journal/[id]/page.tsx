@@ -1,11 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import EntryEditor from "@/components/journal/EntryEditor";
+import { getMethods } from "@/app/actions/methods";
 import type { SkillTagInput, MethodTagInput } from "@/app/actions/journal";
 
 export default async function EntryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
+  const [supabase, methodLibrary] = await Promise.all([createClient(), getMethods()]);
 
   const { data: entry } = await supabase
     .from("journal_entries")
@@ -44,6 +45,7 @@ export default async function EntryPage({ params }: { params: Promise<{ id: stri
     <EntryEditor
       mode="edit"
       entryId={entry.id}
+      methodLibrary={methodLibrary}
       initial={{
         title: entry.title,
         course_title: entry.course_title ?? "",
@@ -51,6 +53,7 @@ export default async function EntryPage({ params }: { params: Promise<{ id: stri
         content: entry.content as Record<string, unknown>,
         skills,
         methods,
+        ai_use_notes: entry.ai_use_notes ?? "",
       }}
     />
   );
