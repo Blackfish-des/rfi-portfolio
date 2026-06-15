@@ -87,6 +87,7 @@ export const DOMAINS: Domain[] = [
     name: "Technology, AI & Digital Futures",
     color: "#0369A1",
     skills: [
+      { id: "ai-relational-literacy", name: "AI Relational Literacy", domainId: "technology" },
       { id: "responsible-ai", name: "Responsible AI Governance", domainId: "technology" },
       { id: "data-governance", name: "Data Governance", domainId: "technology" },
       { id: "digital-democracy", name: "Digital Democracy & Civic Technology", domainId: "technology" },
