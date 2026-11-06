@@ -19,14 +19,15 @@ export async function createShareLink(label?: string) {
 
   const token = randomUUID();
 
-  await supabase.from("assessor_links").insert({
-    portfolio_id: portfolio.id,
-    token,
-    label: label ?? null,
-  });
+  const { data: link, error } = await supabase
+    .from("assessor_links")
+    .insert({ portfolio_id: portfolio.id, token, label: label ?? null })
+    .select("id, token, label, created_at, expires_at")
+    .single();
+  if (error) throw new Error("Could not create share link");
 
   revalidatePath("/portfolio");
-  return token;
+  return link;
 }
 
 export async function deleteShareLink(linkId: string) {
@@ -34,6 +35,7 @@ export async function deleteShareLink(linkId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  await supabase.from("assessor_links").delete().eq("id", linkId);
+  const { error } = await supabase.from("assessor_links").delete().eq("id", linkId);
+  if (error) throw new Error("Could not delete share link");
   revalidatePath("/portfolio");
 }

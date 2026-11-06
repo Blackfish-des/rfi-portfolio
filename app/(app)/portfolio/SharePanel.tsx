@@ -26,18 +26,8 @@ export default function SharePanel({ shareLinks: initial, baseUrl }: Props) {
 
   function handleCreate() {
     startTransition(async () => {
-      const token = await createShareLink(label.trim() || undefined);
-      // Optimistic update — page will revalidate on next load
-      setLinks((prev) => [
-        {
-          id: crypto.randomUUID(),
-          token,
-          label: label.trim() || null,
-          created_at: new Date().toISOString(),
-          expires_at: null,
-        },
-        ...prev,
-      ]);
+      const link = await createShareLink(label.trim() || undefined);
+      setLinks((prev) => [link, ...prev]);
       setLabel("");
     });
   }
@@ -60,7 +50,7 @@ export default function SharePanel({ shareLinks: initial, baseUrl }: Props) {
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Share with assessors</h2>
       </div>
       <p className="text-xs text-gray-400 mb-5">
-        Generate a read-only link to share your portfolio. Links don't expire unless you delete them.
+        Generate a read-only link to share your portfolio. Anyone with the link can view it until it expires after 30 days, or until you delete it.
       </p>
 
       {/* Create */}
@@ -100,6 +90,11 @@ export default function SharePanel({ shareLinks: initial, baseUrl }: Props) {
                 <p className="text-xs text-gray-400 font-mono truncate mt-0.5">
                   {baseUrl}/portfolio/share/{link.token.slice(0, 8)}…
                 </p>
+                {link.expires_at && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Expires {new Date(link.expires_at).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => copyLink(link.token, link.id)}

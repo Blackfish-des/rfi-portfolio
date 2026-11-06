@@ -17,7 +17,7 @@ export type Database = {
       assessor_links: {
         Row: {
           created_at: string
-          expires_at: string | null
+          expires_at: string
           id: string
           label: string | null
           portfolio_id: string
@@ -299,7 +299,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_shared_portfolio: {
+        Args: { share_token: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
