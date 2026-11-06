@@ -15,57 +15,29 @@ const DOMAIN_SHORT: Record<string, string> = {
   "leadership":    "Leadership",
 };
 
+type SharedPortfolio = {
+  name: string;
+  cohort_year: number | null;
+  profile_statement: string | null;
+  bio: string | null;
+  entries: { id: string; title: string; entry_date: string; course_title: string | null }[];
+  skills: { skill_id: string; skill_name: string; domain_id: string; dreyfus_level: number }[];
+  methods: string[];
+};
+
 export default async function SharePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const supabase = await createClient();
 
-  // Resolve token → portfolio
-  const { data: link } = await supabase
-    .from("assessor_links")
-    .select("portfolio_id, expires_at")
-    .eq("token", token)
-    .single();
+  const { data } = await supabase.rpc("get_shared_portfolio", { share_token: token });
+  const shared = data as SharedPortfolio | null;
+  if (!shared) notFound();
 
-  if (!link) notFound();
-  if (link.expires_at && new Date(link.expires_at) < new Date()) notFound();
-
-  const portfolioId = link.portfolio_id;
-
-  const { data: portfolio } = await supabase
-    .from("portfolios")
-    .select("id, profile_statement, bio, student_id")
-    .eq("id", portfolioId)
-    .single();
-
-  if (!portfolio) notFound();
-
-  const { data: student } = await supabase
-    .from("students")
-    .select("name, cohort_year")
-    .eq("id", portfolio.student_id)
-    .single();
-
-  const { data: entries } = await supabase
-    .from("journal_entries")
-    .select("id, title, entry_date, course_title, content")
-    .eq("portfolio_id", portfolioId)
-    .order("entry_date", { ascending: false });
-
-  const entryIds = (entries ?? []).map((e) => e.id);
-
-  const { data: skillRows } = entryIds.length > 0
-    ? await supabase
-        .from("entry_skills")
-        .select("skill_id, skill_name, domain_id, dreyfus_level, reflection, entry_id")
-        .in("entry_id", entryIds)
-    : { data: [] };
-
-  const { data: methodRows } = entryIds.length > 0
-    ? await supabase
-        .from("entry_methods")
-        .select("method_name, entry_id")
-        .in("entry_id", entryIds)
-    : { data: [] };
+  const portfolio = shared;
+  const student = shared;
+  const entries = shared.entries;
+  const skillRows = shared.skills;
+  const uniqueMethods = shared.methods;
 
   // Skill aggregation
   const skillMap = new Map<string, { skill_name: string; domain_id: string; max_level: number }>();
@@ -88,8 +60,6 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
     level: domainMaxLevel.get(d.id) ?? 0,
     color: d.color,
   }));
-
-  const uniqueMethods = [...new Set((methodRows ?? []).map((m) => m.method_name))];
 
   return (
     <div className="min-h-screen bg-gray-50">

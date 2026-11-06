@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import SettingsForm from "./SettingsForm";
-import PrivacyToggle from "./PrivacyToggle";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -16,11 +15,9 @@ export default async function SettingsPage() {
 
   const { data: portfolio } = await supabase
     .from("portfolios")
-    .select("profile_statement, bio, visibility")
+    .select("profile_statement, bio")
     .eq("student_id", student?.id ?? "")
     .single();
-
-  const visibility = (portfolio?.visibility === "open" ? "open" : "private") as "private" | "open";
 
   return (
     <div className="p-8 max-w-2xl">
@@ -41,7 +38,9 @@ export default async function SettingsPage() {
         {/* Privacy */}
         <section className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Privacy</h2>
-          <PrivacyToggle current={visibility} />
+          <p className="text-sm text-gray-600 leading-relaxed">
+            Your portfolio is private. Assessors can only see it through a share link you create, and that link expires after 30 days.
+          </p>
         </section>
       </div>
     </div>

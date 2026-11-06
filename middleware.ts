@@ -31,8 +31,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ["/", "/auth/login", "/auth/signup", "/auth/callback"];
-  const isPublicRoute = publicRoutes.some((r) => pathname.startsWith(r));
+  const publicRoutes = ["/auth/login", "/auth/signup", "/auth/callback", "/auth/forgot-password", "/auth/reset-password", "/api/sync-methods"];
+  const isPublicRoute = pathname === "/" || publicRoutes.some((r) => pathname.startsWith(r));
   const isShareRoute = pathname.startsWith("/portfolio/share/");
 
   if (!user && !isPublicRoute && !isShareRoute) {
